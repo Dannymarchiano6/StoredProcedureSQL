@@ -1,0 +1,135 @@
+--studi kasus sederhana tentang riwayat pembelian toko laptop 
+ --membuat 3 tabel yaitu pelanggan,laptop dan transaksi 
+ CREATE TABLE Pelanggan ( 
+     id_pelanggan VARCHAR(5) PRIMARY KEY, 
+     nama VARCHAR(45), 
+     alamat VARCHAR(45) 
+ ); 
+  
+ CREATE TABLE Laptop ( 
+     id_laptop VARCHAR(5) PRIMARY KEY, 
+     merk VARCHAR(20), 
+     harga INTEGER 
+ ); 
+  
+ CREATE TABLE Transaksi ( 
+     id_transaksi SERIAL PRIMARY KEY, 
+     id_pelanggan VARCHAR, 
+     id_laptop VARCHAR, 
+         qty INTEGER, 
+         tanggal DATE, 
+     FOREIGN KEY (id_pelanggan) REFERENCES Pelanggan (id_pelanggan), 
+     FOREIGN KEY (id_laptop) REFERENCES Laptop (id_laptop) 
+ ); 
+  
+ --stored procedure menambah data tabel pelanggan 
+ CREATE PROCEDURE tambah_data_pelanggan( 
+     IN pelanggan_id VARCHAR(5), 
+     IN pelanggan_nama VARCHAR(45), 
+     IN pelanggan_alamat VARCHAR(45) 
+ ) 
+ LANGUAGE PLPGSQL 
+ as $$ 
+ BEGIN 
+     INSERT INTO Pelanggan (id_pelanggan, nama, alamat) 
+     VALUES (pelanggan_id, pelanggan_nama, pelanggan_alamat); 
+ END; $$ 
+  
+ --stored procedure tambah data laptop 
+ CREATE PROCEDURE tambah_data_laptop( 
+     IN laptop_id VARCHAR(5), 
+     IN laptop_merk VARCHAR(20), 
+     IN laptop_harga INTEGER 
+ ) 
+ LANGUAGE PLPGSQL 
+ as $$ 
+ BEGIN 
+     INSERT INTO Laptop (id_laptop, merk, harga) 
+     VALUES (laptop_id, laptop_merk, laptop_harga); 
+ END; $$ 
+  
+ --Stored Procedure menambahkan data transaksi 
+ CREATE OR REPLACE PROCEDURE tambah_data_transaksi( 
+     IN transaksi_pelanggan_id VARCHAR(5), 
+     IN transaksi_laptop_id VARCHAR(5), 
+         IN transaksi_qty INTEGER, 
+     IN transaksi_tanggal DATE 
+  
+ ) 
+ LANGUAGE PLPGSQL 
+ as $$ 
+ BEGIN 
+     INSERT INTO Transaksi (id_pelanggan, id_laptop, qty , tanggal) 
+     VALUES (transaksi_pelanggan_id, transaksi_laptop_id, transaksi_qty , transaksi_tanggal); 
+ END;$$ 
+  
+ -- Stored procedure untuk menghapus data dari tabel Pelanggan berdasarkan id_pelanggan 
+ CREATE PROCEDURE hapus_data_pelanggan( 
+     IN pelanggan_id VARCHAR(5) 
+ ) 
+ LANGUAGE PLPGSQL 
+ as $$ 
+ BEGIN 
+     DELETE FROM Pelanggan WHERE id_pelanggan = pelanggan_id; 
+ END;$$ 
+  
+ -- Stored procedure untuk menghapus data dari tabel Laptop berdasarkan id_laptop 
+ CREATE PROCEDURE hapus_data_laptop( 
+     IN laptop_id VARCHAR(5) 
+ ) 
+ LANGUAGE PLPGSQL 
+ as $$ 
+ BEGIN 
+     DELETE FROM Laptop WHERE id_laptop = laptop_id; 
+ END;$$ 
+  
+ -- Stored procedure untuk menghapus data dari tabel Transaksi berdasarkan id_transaksi 
+ CREATE PROCEDURE hapus_data_transaksi( 
+     IN transaksi_id INT 
+ ) 
+ LANGUAGE PLPGSQL 
+ as $$ 
+ BEGIN 
+     DELETE FROM Transaksi WHERE id_transaksi = transaksi_id; 
+ END;$$ 
+  
+ --Function untuk mengembalikan hasil query menggabungkan data dari pelanggan , laptop dan transaksi 
+ CREATE OR REPLACE FUNCTION get_transaksi_info() 
+ RETURNS TABLE ( 
+     id_transaksi integer, 
+     nama_pelanggan varchar, 
+     merk_laptop varchar, 
+     harga integer, 
+         qty integer, 
+     tanggal date 
+ ) 
+ LANGUAGE plpgsql 
+ AS $$ 
+ BEGIN 
+     RETURN QUERY 
+     SELECT t.id_transaksi, p.nama AS nama_pelanggan,  
+         l.merk AS merk_laptop, l.harga AS harga_laptop, t.qty ,t.tanggal 
+     FROM Transaksi t 
+     JOIN Pelanggan p ON t.id_pelanggan = p.id_pelanggan 
+     JOIN Laptop l ON t.id_laptop = l.id_laptop; 
+ END;$$ 
+  
+ drop function get_transaksi_info(); 
+  
+ --menginput data  
+ CALL tambah_data_pelanggan('P0001','Deska','Cianjur') 
+ CALL tambah_data_laptop('A0001','ASUS',6000000) 
+ CALL tambah_data_transaksi('P0001','A0001',1,'2023-05-08') 
+  
+ --menghapus data 
+ CALL hapus_data_pelanggan('P0002') 
+ CALL hapus_data_laptop('P0002') 
+ CALL hapus_data_transaksi(1) 
+  
+ --memanggil semua kolom dan baris data pada tabel 
+ SELECT * FROM Pelanggan 
+ SELECT * FROM Laptop 
+ SELECT * FROM Transaksi 
+  
+ --memanggil function yang telah dibuat 
+ SELECT * FROM get_transaksi_info();
