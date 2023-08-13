@@ -117,7 +117,7 @@
  drop function get_transaksi_info(); 
   
  --menginput data  
- CALL tambah_data_pelanggan('P0001','Deska','Cianjur') 
+ CALL tambah_data_pelanggan('P0001','Danny','Cianjur') 
  CALL tambah_data_laptop('A0001','ASUS',6000000) 
  CALL tambah_data_transaksi('P0001','A0001',1,'2023-05-08') 
   
